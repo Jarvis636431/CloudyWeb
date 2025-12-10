@@ -1,9 +1,21 @@
 import { type FC } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuthStore } from '../../stores';
 import Sidebar from './Sidebar';
 import DocumentViewer from '../Preview/DocumentViewer';
 import ChatPanel from '../Chat/ChatPanel';
 
 const MainLayout: FC = () => {
+  const navigate = useNavigate();
+  const { username, clearAuth } = useAuthStore();
+
+  const handleLogout = () => {
+    if (confirm('确定要退出登录吗？')) {
+      clearAuth();
+      navigate('/login', { replace: true });
+    }
+  };
+
   return (
     <div className="flex flex-col h-screen">
       {/* 顶部导航栏 */}
@@ -15,7 +27,15 @@ const MainLayout: FC = () => {
             placeholder="搜索文档..."
             className="w-64 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
-          <div className="w-8 h-8 rounded-full bg-gray-300"></div>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-600">{username}</span>
+            <button
+              onClick={handleLogout}
+              className="text-sm text-red-500 hover:text-red-600"
+            >
+              退出
+            </button>
+          </div>
         </div>
       </header>
 
