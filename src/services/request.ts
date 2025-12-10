@@ -1,5 +1,4 @@
-import axios, { type AxiosInstance, type AxiosRequestConfig, type AxiosResponse } from 'axios';
-import type { ApiResponse } from '../types';
+import axios, { type AxiosInstance, type AxiosRequestConfig } from 'axios';
 
 // 创建 axios 实例
 const instance: AxiosInstance = axios.create({
@@ -28,15 +27,8 @@ instance.interceptors.request.use(
 
 // 响应拦截器
 instance.interceptors.response.use(
-  (response: AxiosResponse<ApiResponse>) => {
-    const { data } = response;
-    
-    // 统一处理业务错误
-    if (data.code !== 200 && data.code !== 0) {
-      console.error('业务错误:', data.message);
-      return Promise.reject(new Error(data.message));
-    }
-    
+  (response) => {
+    // 直接返回响应，不做业务 code 判断（后端直接返回数据）
     return response;
   },
   (error) => {
@@ -69,24 +61,24 @@ instance.interceptors.response.use(
 // 封装请求方法
 class Request {
   get<T = unknown>(url: string, config?: AxiosRequestConfig): Promise<T> {
-    return instance.get<ApiResponse<T>>(url, config).then((res) => res.data.data);
+    return instance.get<T>(url, config).then((res) => res.data);
   }
 
   post<T = unknown>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T> {
-    return instance.post<ApiResponse<T>>(url, data, config).then((res) => res.data.data);
+    return instance.post<T>(url, data, config).then((res) => res.data);
   }
 
   put<T = unknown>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T> {
-    return instance.put<ApiResponse<T>>(url, data, config).then((res) => res.data.data);
+    return instance.put<T>(url, data, config).then((res) => res.data);
   }
 
   delete<T = unknown>(url: string, config?: AxiosRequestConfig): Promise<T> {
-    return instance.delete<ApiResponse<T>>(url, config).then((res) => res.data.data);
+    return instance.delete<T>(url, config).then((res) => res.data);
   }
 
   // 上传文件
   upload<T = unknown>(url: string, formData: FormData, onProgress?: (progress: number) => void): Promise<T> {
-    return instance.post<ApiResponse<T>>(url, formData, {
+    return instance.post<T>(url, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -96,7 +88,7 @@ class Request {
           onProgress(progress);
         }
       },
-    }).then((res) => res.data.data);
+    }).then((res) => res.data);
   }
 }
 
