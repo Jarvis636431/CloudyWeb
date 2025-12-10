@@ -1,6 +1,6 @@
 import { type FC } from 'react';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
-import Sidebar from './Sidebar';
+import FileManager from '@/components/FileManager';
 import DocumentViewer from '@/components/Preview/DocumentViewer';
 import ChatPanel from '@/components/Chat/ChatPanel';
 
@@ -53,9 +53,9 @@ const MainLayout: FC = () => {
 
       {/* 三栏主体布局 - 可拖拽调整宽度 */}
       <PanelGroup direction="horizontal" className="flex-1">
-        {/* 左侧文件树 */}
+        {/* 左侧文件管理器 */}
         <Panel defaultSize={20} minSize={15} maxSize={40}>
-          <Sidebar />
+          <FileManager />
         </Panel>
 
         {/* 拖拽分隔条 */}
