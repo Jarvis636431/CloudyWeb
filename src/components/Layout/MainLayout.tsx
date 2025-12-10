@@ -1,9 +1,9 @@
 import { type FC } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuthStore } from '../../stores';
+import { useAuthStore } from '@/stores';
 import Sidebar from './Sidebar';
-import DocumentViewer from '../Preview/DocumentViewer';
-import ChatPanel from '../Chat/ChatPanel';
+import DocumentViewer from '@/components/Preview/DocumentViewer';
+import ChatPanel from '@/components/Chat/ChatPanel';
 
 const MainLayout: FC = () => {
   const navigate = useNavigate();

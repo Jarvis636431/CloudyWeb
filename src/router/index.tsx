@@ -1,8 +1,8 @@
 import { type FC } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { useAuthStore } from '../stores';
-import LoginPage from '../pages/LoginPage';
-import HomePage from '../pages/HomePage';
+import { useAuthStore } from '@/stores';
+import LoginPage from '@/pages/LoginPage';
+import HomePage from '@/pages/HomePage';
 
 // 路由守卫组件
 const ProtectedRoute: FC<{ children: React.ReactNode }> = ({ children }) => {

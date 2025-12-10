@@ -1,8 +1,8 @@
 import { type FC, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuthStore } from '../../stores';
-import { authService } from '../../services';
-import type { LoginRequest } from '../../types';
+import { useAuthStore } from '@/stores';
+import { authService } from '@/services';
+import type { LoginRequest } from '@/types';
 
 const LoginForm: FC = () => {
   const navigate = useNavigate();
