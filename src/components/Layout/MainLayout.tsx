@@ -1,5 +1,6 @@
 import { type FC } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
 import { useAuthStore } from '@/stores';
 import Sidebar from './Sidebar';
 import DocumentViewer from '@/components/Preview/DocumentViewer';
@@ -39,12 +40,29 @@ const MainLayout: FC = () => {
         </div>
       </header>
 
-      {/* 三栏主体布局 */}
-      <div className="flex flex-1 overflow-hidden">
-        <Sidebar />
-        <DocumentViewer />
-        <ChatPanel />
-      </div>
+      {/* 三栏主体布局 - 可拖拽调整宽度 */}
+      <PanelGroup direction="horizontal" className="flex-1">
+        {/* 左侧文件树 */}
+        <Panel defaultSize={20} minSize={15} maxSize={40}>
+          <Sidebar />
+        </Panel>
+
+        {/* 拖拽分隔条 */}
+        <PanelResizeHandle className="w-1 bg-gray-200 hover:bg-blue-500 transition-colors cursor-col-resize" />
+
+        {/* 中间文档预览 */}
+        <Panel defaultSize={50} minSize={30}>
+          <DocumentViewer />
+        </Panel>
+
+        {/* 拖拽分隔条 */}
+        <PanelResizeHandle className="w-1 bg-gray-200 hover:bg-blue-500 transition-colors cursor-col-resize" />
+
+        {/* 右侧对话面板 */}
+        <Panel defaultSize={30} minSize={20} maxSize={50}>
+          <ChatPanel />
+        </Panel>
+      </PanelGroup>
     </div>
   );
 };
