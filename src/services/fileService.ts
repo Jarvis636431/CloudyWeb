@@ -17,7 +17,7 @@ export const fileService = {
    * 列出子目录
    * GET /files/dirs
    */
-  listDirs: async (path?: string): Promise<string[]> => {
+  listDirs: async (path?: string): Promise<{ path: string; directories: string[] }> => {
     return request.get('/files/dirs', { params: { path } });
   },
 

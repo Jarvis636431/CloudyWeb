@@ -10,6 +10,7 @@ interface FileState {
   selectedDoc: DocInfo | null;
   docChunks: ChunkInfo[];
   isLoading: boolean;
+  refreshTrigger: number; // 用于触发刷新
 
   // 操作
   setCurrentDirectory: (path: string) => void;
@@ -19,6 +20,7 @@ interface FileState {
   setDocChunks: (chunks: ChunkInfo[]) => void;
   clearSelection: () => void;
   setLoading: (loading: boolean) => void;
+  triggerRefresh: () => void; // 触发刷新
 }
 
 export const useFileStore = create<FileState>((set) => ({
@@ -30,6 +32,7 @@ export const useFileStore = create<FileState>((set) => ({
   selectedDoc: null,
   docChunks: [],
   isLoading: false,
+  refreshTrigger: 0,
 
   // 设置当前目录
   setCurrentDirectory: (path) => set({ currentDirectory: path }),
@@ -60,4 +63,7 @@ export const useFileStore = create<FileState>((set) => ({
 
   // 设置加载状态
   setLoading: (loading) => set({ isLoading: loading }),
+
+  // 触发刷新
+  triggerRefresh: () => set((state) => ({ refreshTrigger: state.refreshTrigger + 1 })),
 }));

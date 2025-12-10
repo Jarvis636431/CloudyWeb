@@ -1,4 +1,12 @@
 import axios, { type AxiosInstance, type AxiosRequestConfig } from 'axios';
+import { authService } from './authService';
+
+// 防止刷新 Token 循环
+let isRefreshing = false;
+let failedQueue: Array<{
+  resolve: (value: unknown) => void;
+  reject: (reason?: unknown) => void;
+}> = [];
 
 // 创建 axios 实例
 const instance: AxiosInstance = axios.create({
@@ -12,8 +20,8 @@ const instance: AxiosInstance = axios.create({
 // 请求拦截器
 instance.interceptors.request.use(
   (config) => {
-    // 可以在这里添加 token
-    const token = localStorage.getItem('token');
+    // 从 localStorage 获取 access_token
+    const token = localStorage.getItem('access_token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -31,14 +39,63 @@ instance.interceptors.response.use(
     // 直接返回响应，不做业务 code 判断（后端直接返回数据）
     return response;
   },
-  (error) => {
-    // 处理 HTTP 错误
+  async (error) => {
+    const originalRequest = error.config;
+
+    // 处理 401 错误 - Token 过期
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      if (isRefreshing) {
+        // 已经在刷新中，将请求加入队列
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        })
+          .then((token) => {
+            originalRequest.headers.Authorization = `Bearer ${token}`;
+            return instance(originalRequest);
+          })
+          .catch((err) => Promise.reject(err));
+      }
+
+      originalRequest._retry = true;
+      isRefreshing = true;
+
+      const refreshToken = localStorage.getItem('refresh_token');
+
+      if (!refreshToken) {
+        // 没有 refresh_token，直接清空并跳转登录
+        clearAuthAndRedirect();
+        return Promise.reject(error);
+      }
+
+      try {
+        // 刷新 Token
+        const response = await authService.refresh({ refresh_token: refreshToken });
+        
+        // 保存新 Token
+        localStorage.setItem('access_token', response.access_token);
+        localStorage.setItem('refresh_token', response.refresh_token);
+
+        // 更新原请求的 Token
+        originalRequest.headers.Authorization = `Bearer ${response.access_token}`;
+
+        // 处理队列中的请求
+        processQueue(null, response.access_token);
+
+        // 重新发起原请求
+        return instance(originalRequest);
+      } catch (refreshError) {
+        // 刷新失败，清空认证信息并跳转登录
+        processQueue(refreshError, null);
+        clearAuthAndRedirect();
+        return Promise.reject(refreshError);
+      } finally {
+        isRefreshing = false;
+      }
+    }
+
+    // 处理其他 HTTP 错误
     if (error.response) {
       switch (error.response.status) {
-        case 401:
-          console.error('未授权，请重新登录');
-          // 可以跳转到登录页
-          break;
         case 403:
           console.error('拒绝访问');
           break;
@@ -57,6 +114,30 @@ instance.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+// 处理队列中的请求
+function processQueue(error: unknown, token: string | null = null) {
+  failedQueue.forEach((prom) => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
+    }
+  });
+  failedQueue = [];
+}
+
+// 清空认证信息并跳转登录
+function clearAuthAndRedirect() {
+  localStorage.removeItem('access_token');
+  localStorage.removeItem('refresh_token');
+  localStorage.removeItem('auth-storage'); // zustand persist 的存储
+  
+  // 跳转到登录页
+  if (window.location.pathname !== '/login') {
+    window.location.href = '/login';
+  }
+}
 
 // 封装请求方法
 class Request {

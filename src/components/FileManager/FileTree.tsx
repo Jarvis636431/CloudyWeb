@@ -8,6 +8,7 @@ const FileTree: FC = () => {
     directories, 
     documents, 
     selectedDocId,
+    refreshTrigger, // 新增：监听刷新触发器
     setDirectories, 
     setDocuments, 
     selectDocument,
@@ -15,25 +16,27 @@ const FileTree: FC = () => {
     isLoading
   } = useFileStore();
 
-  // 初始加载
+  // 初始加载和刷新时重新加载
   useEffect(() => {
     loadData();
-  }, [currentDirectory]);
+  }, [currentDirectory, refreshTrigger]); // 依赖刷新触发器
 
   const loadData = async () => {
     try {
       setLoading(true);
       
       // 并行加载目录和文档
-      const [dirs, docs] = await Promise.all([
+      const [dirsResult, docsResult] = await Promise.all([
         fileService.listDirs(currentDirectory),
         fileService.listDocs(currentDirectory)
       ]);
       
-      setDirectories(dirs);
-      setDocuments(docs);
+      setDirectories(dirsResult.directories);
+      setDocuments(docsResult.items);
     } catch (error) {
       console.error('加载文件列表失败:', error);
+      setDirectories([]);
+      setDocuments([]);
     } finally {
       setLoading(false);
     }
@@ -86,14 +89,14 @@ const FileTree: FC = () => {
           </svg>
           <div className="flex-1 min-w-0">
             <div className="text-sm font-medium truncate">{doc.filename}</div>
-            {doc.tags && doc.tags.length > 0 && (
+            {doc.tags && typeof doc.tags === 'string' && doc.tags.length > 0 && (
               <div className="flex gap-1 mt-1">
-                {doc.tags.slice(0, 2).map((tag) => (
+                {doc.tags.split(',').slice(0, 2).map((tag) => (
                   <span
                     key={tag}
                     className="text-xs px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded"
                   >
-                    {tag}
+                    {tag.trim()}
                   </span>
                 ))}
               </div>

@@ -1,6 +1,9 @@
 import { type FC } from 'react';
+import { useFileStore } from '@/stores';
 
 const FileActions: FC = () => {
+  const { triggerRefresh } = useFileStore();
+
   const handleCreateFolder = () => {
     // TODO: 实现创建文件夹
     console.log('创建文件夹');
@@ -12,8 +15,7 @@ const FileActions: FC = () => {
   };
 
   const handleRefresh = () => {
-    // TODO: 实现刷新列表
-    console.log('刷新列表');
+    triggerRefresh(); // 触发刷新
   };
 
   return (
